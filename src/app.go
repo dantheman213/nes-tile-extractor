@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -18,7 +19,7 @@ func main() {
 
 	checkValidNesRom(romBytes)
 	getDataFromRom(romBytes)
-	// fmt.Printf("File contents: %s", romBytes)
+	// fmt.Printf("File contents: %s\n", romBytes)
 
 	fmt.Println("Complete!")
 }
@@ -42,16 +43,20 @@ func loadRom(filePath string) []byte {
 	return contents
 }
 
-func checkValidNesRom(data []byte) {
-	header := make([]byte, 4)
-	copy(header, data)
+func checkValidNesRom(romData []byte) {
+	romHeader := make([]byte, 4)
+	copy(romHeader, romData)
 
-	if bytes.Compare(header, []byte("4e45531a")) == 0 {
-		fmt.Printf("Appears to be a valid NES ROM...")
+	nesHeaderSignature, ex := hex.DecodeString("4e45531a")
+	if ex != nil {
+		log.Fatal(ex)
+	}
+
+	if bytes.Compare(romHeader, nesHeaderSignature) == 0 {
+		fmt.Println("Appears to be a valid NES ROM...")
 	} else {
 		log.Fatal("This is an invalid NES ROM file!")
 	}
-	//fmt.Printf("%x", header)
 }
 
 func getDataFromRom(data []byte) {
