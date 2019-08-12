@@ -60,14 +60,17 @@ func checkValidNesRom(romData []byte) {
 }
 
 func getDataFromRom(data []byte) {
-	offset := 5
+	// start after nes signature
+	offset := 4
+
 	pgr := data[offset]
-
 	offset += 1
+
 	chr := data[offset]
-
 	offset += 1
+
 	trainer := data[offset] & 0x4
+	offset += 1
 
 	offset += 9
 
@@ -85,6 +88,8 @@ func getDataFromRom(data []byte) {
 		multiplier = chr
 	}
 
-	chrbanks := make([]byte, 8192 * int(multiplier))
-	copy(chrbanks[:], data)
+	dataSize := 8192 * int(multiplier)
+	chrbanks := make([]byte, dataSize)
+	copy(chrbanks[:], data[offset:dataSize])
+	fmt.Println("Reading ROM Data...")
 }
