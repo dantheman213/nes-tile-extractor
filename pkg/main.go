@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./imaging"
 	"bytes"
 	"encoding/hex"
 	"fmt"
@@ -100,14 +101,6 @@ func extractTileDataFromRom(chrBankData []byte) {
 		fmt.Printf(".")
 		chrData := make([]byte, 16)
 		copy(chrData[:], chrBankData[chrIndex * 16:(chrIndex * 16) + 16])
-		convertChrDataToImageData(chrData)
+		imaging.ConvertChrDataToImageData(chrData)
 	}
-}
-
-func convertChrDataToImageData(chr []byte) {
-
-}
-
-func saveTileAsImageAtPath() {
-
 }
