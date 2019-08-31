@@ -31,7 +31,9 @@ func importRomDataFromFile(filePath string) {
 		log.Fatal("This is an invalid NES ROM file!")
 	}
 
-	extractTileDataFromRom(filePayloadBytes)
+	//chrBankCount, prgBankCount := getRomHeaderMetadata(filePayloadBytes)
+	getRomHeaderMetadata(filePayloadBytes)
+	//extractTileDataFromRom(filePayloadBytes)
 }
 
 func loadRomFileDataToArray(filePath string) (contents []byte) {
@@ -44,7 +46,7 @@ func loadRomFileDataToArray(filePath string) (contents []byte) {
 	return
 }
 
-func checkValidNesRom(romData []byte) (result bool){
+func checkValidNesRom(romData []byte) (result bool) {
 	romHeader := make([]byte, 4)
 	copy(romHeader, romData)
 
@@ -60,23 +62,43 @@ func checkValidNesRom(romData []byte) (result bool){
 	return false;
 }
 
+func getRomHeaderMetadata(romData []byte) (offsetBytesToChrData, chrDataSizeInBytes int) {
+	prgBankCount := romData[4]
+	chrBankCount := romData[5]
+
+	fmt.Printf("Found %d PRG blocks and %d CHR blocks.\n", prgBankCount, chrBankCount)
+
+	offsetBytesToChrData = 16 + 16384 * int(prgBankCount)
+	chrDataSizeInBytes = 8192 * int(chrBankCount)
+
+	fmt.Printf("Calculated - CHR byte offset: %d, CHR size in bytes: %d, ROM size in bytes: %d\n", offsetBytesToChrData, chrDataSizeInBytes, len(romData))
+
+	if len(romData) < offsetBytesToChrData + chrDataSizeInBytes {
+		log.Fatal("Invalid ROM payload or unable to calculate CHR bank location and size.\n")
+	}
+
+	return
+}
+
 func extractTileDataFromRom(romData []byte) {
-	// start after nes signature
-	offset := 4
+	offsetBytes := 0
 
-	pgr := romData[offset]
-	offset += 1
+	// move past nes signature and top level information
+	offsetBytes = 16
 
-	chr := romData[offset]
-	offset += 1
+	pgr := romData[offsetBytes]
+	offsetBytes += 1
 
-	trainer := romData[offset] & 0x4
-	offset += 1
+	chr := romData[offsetBytes]
+	offsetBytes += 1
 
-	offset += 9
+	trainer := romData[offsetBytes] & 0x4
+	offsetBytes += 1
+
+	offsetBytes += 9
 
 	if trainer != 0 {
-		offset += 512
+		offsetBytes += 512
 	}
 
 	// if chrbanks is 0 then the sprites are embedded in pgr blocks instead
@@ -85,13 +107,13 @@ func extractTileDataFromRom(romData []byte) {
 		multiplier = pgr
 	} else {
 		// skip pgr section
-		offset += int(pgr) * 16384
+		offsetBytes += int(pgr) * 16384
 		multiplier = chr
 	}
 
 	dataSize := 8192 * int(multiplier)
 	chrBanks := make([]byte, dataSize)
-	copy(chrBanks[:], romData[offset:dataSize])
+	copy(chrBanks[:], romData[offsetBytes:dataSize])
 
 	fmt.Println("Reading ROM Data...")
 }
