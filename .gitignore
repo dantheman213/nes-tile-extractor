@@ -2,6 +2,7 @@
 [Tt]humbs.db
 
 # Binaries for programs and plugins
+*.png
 *.exe
 *.exe~
 *.dll

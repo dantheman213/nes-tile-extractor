@@ -2,12 +2,15 @@
 
 TODO
 
-
 ## Tools
 
-* https://hexed.it/?hl=en
+* https://hexed.it/
+
+* https://thorbjorn.itch.io/tiled
 
 ## References
+
+* http://www.thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette
 
 * https://sadistech.com/nesromtool/romdoc.html
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"./common"
 	"./imaging"
 	"bytes"
 	"encoding/hex"
@@ -8,21 +9,23 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 )
 
 func main() {
 	fmt.Println("Welcome to NES Tile Extractor!")
 
-	romPath := checkArgs()
-	importRomDataFromFile(romPath)
+	romPath, scale := checkArgs()
+	importRomDataFromFile(romPath, scale)
 }
 
-func checkArgs() (romPath string) {
+func checkArgs() (romPath string, imageScale int) {
 	romPath = os.Args[1]
+	imageScale, _ = strconv.Atoi(os.Args[2])
 	return
 }
 
-func importRomDataFromFile(filePath string) {
+func importRomDataFromFile(filePath string, scale int) {
 	filePayloadBytes := loadRomFileDataToArray(filePath)
 	validRomResult := checkValidNesRom(filePayloadBytes)
 
@@ -34,7 +37,7 @@ func importRomDataFromFile(filePath string) {
 
 	offsetBytesToChrData, chrDataSizeInBytes := getRomHeaderMetadata(filePayloadBytes)
 	chrBankData := getChrBankData(filePayloadBytes, offsetBytesToChrData, chrDataSizeInBytes)
-	extractTileDataFromRom(chrBankData)
+	extractTileDataFromRom(chrBankData, scale)
 }
 
 func loadRomFileDataToArray(filePath string) (contents []byte) {
@@ -92,7 +95,7 @@ func getChrBankData(romData []byte, offsetBytesToChrData, chrDataSizeInBytes int
 	return
 }
 
-func extractTileDataFromRom(chrBankData []byte) {
+func extractTileDataFromRom(chrBankData []byte, scale int) {
 	chrCount := (len(chrBankData) + 1) / 16
 	fmt.Printf("There are %d CHRs (sprites) in CHR data bank.\n", chrCount)
 
@@ -101,6 +104,7 @@ func extractTileDataFromRom(chrBankData []byte) {
 		fmt.Printf(".")
 		chrData := make([]byte, 16)
 		copy(chrData[:], chrBankData[chrIndex * 16:(chrIndex * 16) + 16])
-		imaging.ConvertChrDataToImageData(chrData)
+		chrImgStruct := imaging.ConvertChrDataToImageData(chrData)
+		imaging.GenerateModernImgFromChrData(chrImgStruct, fmt.Sprintf("%s%sitem_%d.png", common.GetCurrentApplicationDir(), string(os.PathSeparator), chrIndex), scale)
 	}
 }
