@@ -63,8 +63,8 @@ func checkValidNesRom(romData []byte) (result bool) {
 }
 
 func getRomHeaderMetadata(romData []byte) (offsetBytesToChrData, chrDataSizeInBytes int) {
-	prgBankCount := romData[4]
-	chrBankCount := romData[5]
+	prgBankCount := uint8(romData[4])
+	chrBankCount := uint8(romData[5])
 
 	fmt.Printf("Found %d PRG blocks and %d CHR blocks.\n", prgBankCount, chrBankCount)
 
