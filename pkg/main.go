@@ -31,9 +31,9 @@ func importRomDataFromFile(filePath string) {
 		log.Fatal("This is an invalid NES ROM file!")
 	}
 
-	//chrBankCount, prgBankCount := getRomHeaderMetadata(filePayloadBytes)
-	getRomHeaderMetadata(filePayloadBytes)
-	//extractTileDataFromRom(filePayloadBytes)
+	offsetBytesToChrData, chrDataSizeInBytes := getRomHeaderMetadata(filePayloadBytes)
+	chrBankData := getChrBankData(filePayloadBytes, offsetBytesToChrData, chrDataSizeInBytes)
+	extractTileDataFromRom(chrBankData)
 }
 
 func loadRomFileDataToArray(filePath string) (contents []byte) {
@@ -63,6 +63,8 @@ func checkValidNesRom(romData []byte) (result bool) {
 }
 
 func getRomHeaderMetadata(romData []byte) (offsetBytesToChrData, chrDataSizeInBytes int) {
+	fmt.Println("Calculating ROM properties...")
+
 	prgBankCount := uint8(romData[4])
 	chrBankCount := uint8(romData[5])
 
@@ -71,7 +73,7 @@ func getRomHeaderMetadata(romData []byte) (offsetBytesToChrData, chrDataSizeInBy
 	offsetBytesToChrData = 16 + 16384 * int(prgBankCount)
 	chrDataSizeInBytes = 8192 * int(chrBankCount)
 
-	fmt.Printf("Calculated - CHR byte offset: %d, CHR size in bytes: %d, ROM size in bytes: %d\n", offsetBytesToChrData, chrDataSizeInBytes, len(romData))
+	fmt.Printf("Calculated ROM properties:\nCHR byte offset: %d\nCHR size in bytes: %d\nROM size in bytes: %d\n", offsetBytesToChrData, chrDataSizeInBytes, len(romData))
 
 	if len(romData) < offsetBytesToChrData + chrDataSizeInBytes {
 		log.Fatal("Invalid ROM payload or unable to calculate CHR bank location and size.\n")
@@ -80,45 +82,29 @@ func getRomHeaderMetadata(romData []byte) (offsetBytesToChrData, chrDataSizeInBy
 	return
 }
 
-func extractTileDataFromRom(romData []byte) {
-	offsetBytes := 0
+func getChrBankData(romData []byte, offsetBytesToChrData, chrDataSizeInBytes int) (chrBankData []byte) {
+	fmt.Println("Getting CHR data bank...")
 
-	// move past nes signature and top level information
-	offsetBytes = 16
+	chrBankData = make([]byte, chrDataSizeInBytes)
+	copy(chrBankData[:], romData[offsetBytesToChrData:offsetBytesToChrData + chrDataSizeInBytes])
 
-	pgr := romData[offsetBytes]
-	offsetBytes += 1
-
-	chr := romData[offsetBytes]
-	offsetBytes += 1
-
-	trainer := romData[offsetBytes] & 0x4
-	offsetBytes += 1
-
-	offsetBytes += 9
-
-	if trainer != 0 {
-		offsetBytes += 512
-	}
-
-	// if chrbanks is 0 then the sprites are embedded in pgr blocks instead
-	var multiplier byte
-	if chr == 0 {
-		multiplier = pgr
-	} else {
-		// skip pgr section
-		offsetBytes += int(pgr) * 16384
-		multiplier = chr
-	}
-
-	dataSize := 8192 * int(multiplier)
-	chrBanks := make([]byte, dataSize)
-	copy(chrBanks[:], romData[offsetBytes:dataSize])
-
-	fmt.Println("Reading ROM Data...")
+	return
 }
 
-func convertTileDataToImageData() {
+func extractTileDataFromRom(chrBankData []byte) {
+	chrCount := (len(chrBankData) + 1) / 16
+	fmt.Printf("There are %d CHRs (sprites) in CHR data bank.\n", chrCount)
+
+	fmt.Printf("Extracting")
+	for chrIndex := 0; chrIndex < chrCount; chrIndex++ {
+		fmt.Printf(".")
+		chrData := make([]byte, 16)
+		copy(chrData[:], chrBankData[chrIndex * 16:(chrIndex * 16) + 16])
+		convertChrDataToImageData(chrData)
+	}
+}
+
+func convertChrDataToImageData(chr []byte) {
 
 }
 
