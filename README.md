@@ -10,16 +10,16 @@ TODO
 
 ## References
 
-* http://www.thealmightyguru.com/Games/Hacking/Wiki/index.php/NES_Palette
-
-* https://sadistech.com/nesromtool/romdoc.html
+* http://nesdev.com/NESDoc.pdf
 
 * https://wiki.nesdev.com/w/index.php/INES
 
-* https://wiki.nesdev.com/w/index.php/NES_2.0#Header
+* https://sadistech.com/nesromtool/romdoc.html
+
+* https://wiki.nesdev.com/w/index.php/CHR_ROM_vs._CHR_RAM
+
+* https://github.com/fogleman/nes
 
 * https://github.com/philcali/scalnes
 
 * https://github.com/tsalvo/nes-chr-editor
-
-* https://wiki.nesdev.com/w/index.php/CHR_ROM_vs._CHR_RAM
